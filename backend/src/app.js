@@ -3,6 +3,7 @@ const cors = require('cors')
 const helmet = require('helmet')
 
 const authRoutes = require('./routes/auth')
+const transactionRoutes = require('./routes/transactions')
 
 const app = express()
 
@@ -20,6 +21,7 @@ app.get('/health', (req, res) => {
 })
 
 app.use('/api/auth', authRoutes)
+app.use('/api/transactions', transactionRoutes)
 
 app.use((req, res) => {
   res.status(404).json({

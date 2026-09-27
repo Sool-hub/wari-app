@@ -21,3 +21,22 @@ Content-Type: application/json
   "telephone": "76000001",
   "pin": "1234"
 }
+
+### Test Solde
+GET http://localhost:3000/api/transactions/solde
+Authorization: Bearer TON_TOKEN_ICI
+
+### Test Recharge Orange Money
+POST http://localhost:3000/api/transactions/recharger
+Content-Type: application/json
+Authorization: Bearer TON_TOKEN_ICI
+
+{
+  "montant": 5000,
+  "operateur": "orange_money",
+  "telephone_mobile_money": "76000001"
+}
+
+### Test Historique
+GET http://localhost:3000/api/transactions/historique
+Authorization: Bearer TON_TOKEN_ICI
