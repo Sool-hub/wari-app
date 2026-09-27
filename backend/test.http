@@ -1,0 +1,23 @@
+﻿### Test Health
+GET http://localhost:3000/health
+
+### Test Inscription
+POST http://localhost:3000/api/auth/inscription
+Content-Type: application/json
+
+{
+  "nom": "Coulibaly",
+  "prenom": "Solomani",
+  "telephone": "76000001",
+  "pin": "1234",
+  "date_naissance": "1990-01-01"
+}
+
+### Test Connexion
+POST http://localhost:3000/api/auth/connexion
+Content-Type: application/json
+
+{
+  "telephone": "76000001",
+  "pin": "1234"
+}
