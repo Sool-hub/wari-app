@@ -5,6 +5,7 @@ const helmet = require('helmet')
 const authRoutes = require('./routes/auth')
 const transactionRoutes = require('./routes/transactions')
 const carteRoutes = require('./routes/cartes')
+const transfertRoutes = require('./routes/transferts')
 
 const app = express()
 
@@ -24,6 +25,7 @@ app.get('/health', (req, res) => {
 app.use('/api/auth', authRoutes)
 app.use('/api/transactions', transactionRoutes)
 app.use('/api/cartes', carteRoutes)
+app.use('/api/transferts', transfertRoutes)
 
 app.use((req, res) => {
   res.status(404).json({
