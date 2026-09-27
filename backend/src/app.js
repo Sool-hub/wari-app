@@ -4,6 +4,7 @@ const helmet = require('helmet')
 
 const authRoutes = require('./routes/auth')
 const transactionRoutes = require('./routes/transactions')
+const carteRoutes = require('./routes/cartes')
 
 const app = express()
 
@@ -22,6 +23,7 @@ app.get('/health', (req, res) => {
 
 app.use('/api/auth', authRoutes)
 app.use('/api/transactions', transactionRoutes)
+app.use('/api/cartes', carteRoutes)
 
 app.use((req, res) => {
   res.status(404).json({

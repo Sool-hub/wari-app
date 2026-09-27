@@ -40,3 +40,35 @@ Authorization: Bearer TON_TOKEN_ICI
 ### Test Historique
 GET http://localhost:3000/api/transactions/historique
 Authorization: Bearer TON_TOKEN_ICI
+
+### Creer Carte Virtuelle
+POST http://localhost:3000/api/cartes/creer
+Authorization: Bearer TON_TOKEN_ICI
+
+### Obtenir Carte
+GET http://localhost:3000/api/cartes
+Authorization: Bearer TON_TOKEN_ICI
+
+### Bloquer Carte
+PUT http://localhost:3000/api/cartes/bloquer
+Authorization: Bearer TON_TOKEN_ICI
+
+### Debloquer Carte
+PUT http://localhost:3000/api/cartes/debloquer
+Authorization: Bearer TON_TOKEN_ICI
+
+### Creer Carte Virtuelle
+POST http://localhost:3000/api/cartes/creer
+Authorization: Bearer TON_TOKEN_ICI
+
+### Obtenir Carte
+GET http://localhost:3000/api/cartes
+Authorization: Bearer TON_TOKEN_ICI
+
+### Bloquer Carte
+PUT http://localhost:3000/api/cartes/bloquer
+Authorization: Bearer TON_TOKEN_ICI
+
+### Debloquer Carte
+PUT http://localhost:3000/api/cartes/debloquer
+Authorization: Bearer TON_TOKEN_ICI
