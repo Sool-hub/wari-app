@@ -2,6 +2,7 @@
 const Compte = require('./Compte')
 const Transaction = require('./Transaction')
 const Carte = require('./Carte')
+const Abonnement = require('./Abonnement')
 
 Utilisateur.hasOne(Compte, { foreignKey: 'utilisateur_id', as: 'compte' })
 Compte.belongsTo(Utilisateur, { foreignKey: 'utilisateur_id', as: 'utilisateur' })
@@ -12,4 +13,7 @@ Transaction.belongsTo(Compte, { foreignKey: 'compte_id', as: 'compte' })
 Compte.hasMany(Carte, { foreignKey: 'compte_id', as: 'cartes' })
 Carte.belongsTo(Compte, { foreignKey: 'compte_id', as: 'compte' })
 
-module.exports = { Utilisateur, Compte, Transaction, Carte }
+Compte.hasMany(Abonnement, { foreignKey: 'compte_id', as: 'abonnements' })
+Abonnement.belongsTo(Compte, { foreignKey: 'compte_id', as: 'compte' })
+
+module.exports = { Utilisateur, Compte, Transaction, Carte, Abonnement }

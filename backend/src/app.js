@@ -1,14 +1,17 @@
 ﻿const express = require('express')
 const cors = require('cors')
 const helmet = require('helmet')
+const cron = require('node-cron')
 
 const authRoutes = require('./routes/auth')
 const transactionRoutes = require('./routes/transactions')
 const carteRoutes = require('./routes/cartes')
 const transfertRoutes = require('./routes/transferts')
 const kycRoutes = require('./routes/kyc')
+const abonnementRoutes = require('./routes/abonnements')
 const { limiterGeneral } = require('./middleware/rateLimiter')
 const { middlewareLog } = require('./middleware/logger')
+const { detecterAbonnements } = require('./services/abonnementService')
 
 const app = express()
 
@@ -32,6 +35,12 @@ app.use('/api/transactions', transactionRoutes)
 app.use('/api/cartes', carteRoutes)
 app.use('/api/transferts', transfertRoutes)
 app.use('/api/kyc', kycRoutes)
+app.use('/api/abonnements', abonnementRoutes)
+
+cron.schedule('0 2 * * *', () => {
+  console.log('[CRON] Lancement detection abonnements')
+  detecterAbonnements()
+})
 
 app.use((req, res) => {
   res.status(404).json({
