@@ -6,6 +6,7 @@ const authRoutes = require('./routes/auth')
 const transactionRoutes = require('./routes/transactions')
 const carteRoutes = require('./routes/cartes')
 const transfertRoutes = require('./routes/transferts')
+const kycRoutes = require('./routes/kyc')
 const { limiterGeneral } = require('./middleware/rateLimiter')
 const { middlewareLog } = require('./middleware/logger')
 
@@ -30,6 +31,7 @@ app.use('/api/auth', authRoutes)
 app.use('/api/transactions', transactionRoutes)
 app.use('/api/cartes', carteRoutes)
 app.use('/api/transferts', transfertRoutes)
+app.use('/api/kyc', kycRoutes)
 
 app.use((req, res) => {
   res.status(404).json({

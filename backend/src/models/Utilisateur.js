@@ -40,8 +40,24 @@ const Utilisateur = sequelize.define('Utilisateur', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  kyc_session_id: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   date_naissance: {
     type: DataTypes.DATEONLY,
+    allowNull: true
+  },
+  tentatives_pin: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  bloque_jusqu_a: {
+    type: DataTypes.DATE,
+    allowNull: true
+  },
+  refresh_token: {
+    type: DataTypes.TEXT,
     allowNull: true
   }
 }, {
