@@ -1,29 +1,43 @@
-const { Sequelize } = require('sequelize')
+﻿const { Sequelize } = require('sequelize')
 
-const sequelize = new Sequelize(
-  process.env.DB_NAME,
-  process.env.DB_USER,
-  process.env.DB_PASSWORD,
-  {
-    host: process.env.DB_HOST,
-    port: process.env.DB_PORT,
+let sequelize
+
+if (process.env.DATABASE_URL) {
+  sequelize = new Sequelize(process.env.DATABASE_URL, {
     dialect: 'postgres',
     logging: false,
-    pool: {
-      max: 5,
-      min: 0,
-      acquire: 30000,
-      idle: 10000
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false
+      }
+    },
+    pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
+  })
+} else {
+  sequelize = new Sequelize(
+    process.env.PGDATABASE || process.env.DB_NAME || 'wari_db',
+    process.env.PGUSER || process.env.DB_USER || 'postgres',
+    process.env.PGPASSWORD || process.env.DB_PASSWORD || 'wari2kadi',
+    {
+      host: process.env.PGHOST || process.env.DB_HOST || 'localhost',
+      port: process.env.PGPORT || process.env.DB_PORT || 5432,
+      dialect: 'postgres',
+      logging: false,
+      dialectOptions: process.env.PGHOST ? {
+        ssl: { require: true, rejectUnauthorized: false }
+      } : {},
+      pool: { max: 5, min: 0, acquire: 30000, idle: 10000 }
     }
-  }
-)
+  )
+}
 
 const connectDB = async () => {
   try {
     await sequelize.authenticate()
-    console.log('Connexion à PostgreSQL réussie')
+    console.log('Connexion a PostgreSQL reussie')
   } catch (error) {
-    console.error('Erreur de connexion à PostgreSQL :', error.message)
+    console.error('Erreur de connexion a PostgreSQL :', error.message)
     process.exit(1)
   }
 }
