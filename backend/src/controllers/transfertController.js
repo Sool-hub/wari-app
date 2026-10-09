@@ -27,9 +27,7 @@ const transferer = async (req, res) => {
       })
     }
 
-    const compteExpediteur = await Compte.findOne({
-      where: { utilisateur_id }
-    })
+    const compteExpediteur = await Compte.findOne({ where: { utilisateur_id } })
 
     if (!compteExpediteur) {
       return res.status(404).json({
@@ -87,7 +85,20 @@ const transferer = async (req, res) => {
       compte_id: compteExpediteur.id,
       telephone_expediteur: req.utilisateur.telephone,
       telephone_destinataire,
-      description: description || 'Transfert Wari'
+      description: description || 'Transfert envoye a ' + telephone_destinataire
+    })
+
+    await Transaction.create({
+      reference: reference + '-R',
+      type: 'recharge',
+      montant,
+      frais: 0,
+      statut: 'reussi',
+      operateur: 'wari',
+      compte_id: compteDestinataire.id,
+      telephone_expediteur: req.utilisateur.telephone,
+      telephone_destinataire,
+      description: 'Transfert recu de ' + req.utilisateur.telephone
     })
 
     const compteActualise = await Compte.findByPk(compteExpediteur.id)
