@@ -54,7 +54,10 @@ export default function HistoriqueScreen({ navigation }) {
     const estEntrant = item.type === 'recharge'
 
     return (
-      <TouchableOpacity style={styles.transaction}>
+      <TouchableOpacity
+        style={styles.transaction}
+        onPress={() => navigation.navigate('TransactionDetail', { transaction: item })}
+      >
         <View style={[styles.iconeContainer, { backgroundColor: icone.fond }]}>
           <Text style={[styles.icone, { color: icone.couleur }]}>{icone.emoji}</Text>
         </View>
@@ -157,11 +160,7 @@ const styles = StyleSheet.create({
   info: { flex: 1 },
   description: { fontSize: 15, color: '#FFFFFF', marginBottom: 4 },
   date: { fontSize: 13, color: '#8E8E93' },
-  echec: {
-    marginTop: 4,
-    flexDirection: 'row',
-    alignItems: 'center'
-  },
+  echec: { marginTop: 4 },
   echecTexte: { fontSize: 13, color: '#DC2626' },
   montantContainer: {
     flexDirection: 'row',

@@ -15,6 +15,7 @@ import TransfertScreen from '../screens/TransfertScreen'
 import HistoriqueScreen from '../screens/HistoriqueScreen'
 import AbonnementsScreen from '../screens/AbonnementsScreen'
 import ProfilScreen from '../screens/ProfilScreen'
+import TransactionDetailScreen from '../screens/TransactionDetailScreen'
 
 const Stack = createNativeStackNavigator()
 
@@ -48,6 +49,7 @@ export default function Navigation() {
             <Stack.Screen name="Historique" component={HistoriqueScreen} />
             <Stack.Screen name="Abonnements" component={AbonnementsScreen} />
             <Stack.Screen name="Profil" component={ProfilScreen} />
+            <Stack.Screen name="TransactionDetail" component={TransactionDetailScreen} />
           </>
         )}
       </Stack.Navigator>
