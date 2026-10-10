@@ -5,7 +5,7 @@ const { proteger } = require('../middleware/auth')
 const { valider, reglesRecharge } = require('../middleware/validation')
 
 router.get('/solde', proteger, obtenirSolde)
-router.post('/recharger', proteger, reglesRecharge, valider, recharger)
 router.get('/historique', proteger, obtenirHistorique)
+router.post('/recharger', proteger, reglesRecharge, valider, recharger)
 
 module.exports = router

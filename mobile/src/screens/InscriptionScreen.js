@@ -2,9 +2,10 @@
 import {
   View, Text, StyleSheet, TouchableOpacity,
   StatusBar, TextInput, Alert, ActivityIndicator,
-  ScrollView, KeyboardAvoidingView, Platform
+  ScrollView, KeyboardAvoidingView, Platform, Linking
 } from 'react-native'
 import { useAuth } from '../context/AuthContext'
+import { kycService } from '../services/api'
 
 export default function InscriptionScreen({ navigation }) {
   const [etape, setEtape] = useState(1)
@@ -15,6 +16,7 @@ export default function InscriptionScreen({ navigation }) {
   const [pin, setPin] = useState('')
   const [pinConfirm, setPinConfirm] = useState('')
   const [chargement, setChargement] = useState(false)
+  const [urlKYC, setUrlKYC] = useState(null)
   const { inscription } = useAuth()
 
   const etapeSuivante = () => {
@@ -44,10 +46,32 @@ export default function InscriptionScreen({ navigation }) {
     setChargement(true)
     try {
       await inscription({ nom, prenom, telephone, pin, date_naissance: dateNaissance || undefined })
+      const kycResponse = await kycService.initialiser()
+      const url = kycResponse.data.data.url_verification
+      setUrlKYC(url)
+      setEtape(3)
     } catch (error) {
       Alert.alert('Erreur', error.response?.data?.message || 'Erreur lors de l\'inscription')
+    } finally {
       setChargement(false)
     }
+  }
+
+  const ouvrirKYC = async () => {
+    if (urlKYC) {
+      await Linking.openURL(urlKYC)
+    }
+  }
+
+  const passerKYC = () => {
+    Alert.alert(
+      'Verification requise',
+      'Vous pourrez verifier votre identite plus tard depuis votre profil. Certaines fonctionnalites seront limitees.',
+      [
+        { text: 'Annuler', style: 'cancel' },
+        { text: 'Continuer quand meme', onPress: () => {} }
+      ]
+    )
   }
 
   return (
@@ -58,19 +82,19 @@ export default function InscriptionScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor="#0A0A0A" />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => etape === 1 ? navigation.goBack() : setEtape(1)}>
-          <Text style={styles.retour}>←</Text>
+        <TouchableOpacity onPress={() => etape === 1 ? navigation.goBack() : setEtape(etape - 1)}>
+          <Text style={styles.retour}>{etape === 3 ? '' : '←'}</Text>
         </TouchableOpacity>
         <Text style={styles.titrePage}>Creer un compte</Text>
-        <Text style={styles.etapeIndicateur}>{etape}/2</Text>
+        <Text style={styles.etapeIndicateur}>{etape}/3</Text>
       </View>
 
       <View style={styles.progressContainer}>
-        <View style={[styles.progressBarre, { width: etape === 1 ? '50%' : '100%' }]} />
+        <View style={[styles.progressBarre, { width: etape === 1 ? '33%' : etape === 2 ? '66%' : '100%' }]} />
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false} style={styles.contenu}>
-        {etape === 1 ? (
+        {etape === 1 && (
           <>
             <Text style={styles.titreEtape}>Vos informations</Text>
             <Text style={styles.descriptionEtape}>
@@ -120,7 +144,9 @@ export default function InscriptionScreen({ navigation }) {
               onChangeText={setDateNaissance}
             />
           </>
-        ) : (
+        )}
+
+        {etape === 2 && (
           <>
             <Text style={styles.titreEtape}>Creez votre PIN</Text>
             <Text style={styles.descriptionEtape}>
@@ -158,14 +184,49 @@ export default function InscriptionScreen({ navigation }) {
             </View>
           </>
         )}
+
+        {etape === 3 && (
+          <>
+            <View style={styles.kycContainer}>
+              <Text style={styles.kycEmoji}>🪪</Text>
+              <Text style={styles.kycTitre}>Verifiez votre identite</Text>
+              <Text style={styles.kycDescription}>
+                Pour securiser votre compte et respecter la reglementation, nous avons besoin de verifier votre identite avec votre CNI.
+              </Text>
+
+              <View style={styles.kycEtapes}>
+                <View style={styles.kycEtape}>
+                  <View style={styles.kycNumero}>
+                    <Text style={styles.kycNumeroTexte}>1</Text>
+                  </View>
+                  <Text style={styles.kycEtapeTexte}>Prenez en photo votre CNI recto verso</Text>
+                </View>
+                <View style={styles.kycEtape}>
+                  <View style={styles.kycNumero}>
+                    <Text style={styles.kycNumeroTexte}>2</Text>
+                  </View>
+                  <Text style={styles.kycEtapeTexte}>Prenez un selfie pour confirmer votre identite</Text>
+                </View>
+                <View style={styles.kycEtape}>
+                  <View style={styles.kycNumero}>
+                    <Text style={styles.kycNumeroTexte}>3</Text>
+                  </View>
+                  <Text style={styles.kycEtapeTexte}>Votre compte est active automatiquement</Text>
+                </View>
+              </View>
+            </View>
+          </>
+        )}
       </ScrollView>
 
       <View style={styles.footer}>
-        {etape === 1 ? (
+        {etape === 1 && (
           <TouchableOpacity style={styles.bouton} onPress={etapeSuivante}>
             <Text style={styles.texteBouton}>Continuer</Text>
           </TouchableOpacity>
-        ) : (
+        )}
+
+        {etape === 2 && (
           <TouchableOpacity
             style={[styles.bouton, chargement && styles.boutonDesactive]}
             onPress={handleInscription}
@@ -177,6 +238,17 @@ export default function InscriptionScreen({ navigation }) {
               <Text style={styles.texteBouton}>Creer mon compte</Text>
             )}
           </TouchableOpacity>
+        )}
+
+        {etape === 3 && (
+          <>
+            <TouchableOpacity style={styles.bouton} onPress={ouvrirKYC}>
+              <Text style={styles.texteBouton}>Verifier mon identite</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.boutonSecondaire} onPress={passerKYC}>
+              <Text style={styles.texteBoutonSecondaire}>Le faire plus tard</Text>
+            </TouchableOpacity>
+          </>
         )}
       </View>
     </KeyboardAvoidingView>
@@ -209,18 +281,8 @@ const styles = StyleSheet.create({
     borderRadius: 2
   },
   contenu: { flex: 1, paddingHorizontal: 16 },
-  titreEtape: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8
-  },
-  descriptionEtape: {
-    fontSize: 15,
-    color: '#8E8E93',
-    lineHeight: 22,
-    marginBottom: 32
-  },
+  titreEtape: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
+  descriptionEtape: { fontSize: 15, color: '#8E8E93', lineHeight: 22, marginBottom: 32 },
   label: { fontSize: 14, color: '#8E8E93', marginBottom: 8, marginTop: 16 },
   input: {
     backgroundColor: '#1C1C1E',
@@ -247,13 +309,34 @@ const styles = StyleSheet.create({
     marginTop: 24
   },
   avertissementTexte: { fontSize: 13, color: '#8E8E93', lineHeight: 20 },
+  kycContainer: { alignItems: 'center', paddingTop: 20 },
+  kycEmoji: { fontSize: 70, marginBottom: 24 },
+  kycTitre: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 12, textAlign: 'center' },
+  kycDescription: { fontSize: 15, color: '#8E8E93', textAlign: 'center', lineHeight: 24, marginBottom: 32 },
+  kycEtapes: { width: '100%' },
+  kycEtape: { flexDirection: 'row', alignItems: 'center', marginBottom: 20 },
+  kycNumero: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: '#F0A500',
+    alignItems: 'center', justifyContent: 'center',
+    marginRight: 14
+  },
+  kycNumeroTexte: { fontSize: 16, fontWeight: 'bold', color: '#FFFFFF' },
+  kycEtapeTexte: { fontSize: 15, color: '#FFFFFF', flex: 1 },
   footer: { padding: 16, paddingBottom: 34 },
   bouton: {
     backgroundColor: '#F0A500',
     borderRadius: 16,
     paddingVertical: 18,
+    alignItems: 'center',
+    marginBottom: 12
+  },
+  boutonSecondaire: {
+    borderRadius: 16,
+    paddingVertical: 16,
     alignItems: 'center'
   },
   boutonDesactive: { opacity: 0.6 },
-  texteBouton: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' }
+  texteBouton: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
+  texteBoutonSecondaire: { fontSize: 16, color: '#8E8E93' }
 })
