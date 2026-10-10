@@ -17,7 +17,8 @@ export default function InscriptionScreen({ navigation }) {
   const [pinConfirm, setPinConfirm] = useState('')
   const [chargement, setChargement] = useState(false)
   const [urlKYC, setUrlKYC] = useState(null)
-  const { inscription } = useAuth()
+  const [kycLance, setKycLance] = useState(false)
+  const { inscription, activerCompte } = useAuth()
 
   const etapeSuivante = () => {
     if (etape === 1) {
@@ -59,19 +60,29 @@ export default function InscriptionScreen({ navigation }) {
 
   const ouvrirKYC = async () => {
     if (urlKYC) {
+      setKycLance(true)
       await Linking.openURL(urlKYC)
     }
   }
 
-  const passerKYC = () => {
-    Alert.alert(
-      'Verification requise',
-      'Vous pourrez verifier votre identite plus tard depuis votre profil. Certaines fonctionnalites seront limitees.',
-      [
-        { text: 'Annuler', style: 'cancel' },
-        { text: 'Continuer quand meme', onPress: () => {} }
-      ]
-    )
+  const verifierEtActiver = async () => {
+    setChargement(true)
+    try {
+      const response = await kycService.statut()
+      if (response.data.data.kyc_verifie) {
+        await activerCompte()
+      } else {
+        Alert.alert(
+          'Verification en cours',
+          'Votre identite est en cours de verification. Si vous avez deja effectue la verification, patientez quelques instants et reessayez.',
+          [{ text: 'OK' }]
+        )
+      }
+    } catch (error) {
+      Alert.alert('Erreur', 'Impossible de verifier le statut')
+    } finally {
+      setChargement(false)
+    }
   }
 
   return (
@@ -82,8 +93,8 @@ export default function InscriptionScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor="#0A0A0A" />
 
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => etape === 1 ? navigation.goBack() : setEtape(etape - 1)}>
-          <Text style={styles.retour}>{etape === 3 ? '' : '←'}</Text>
+        <TouchableOpacity onPress={() => etape === 1 ? navigation.goBack() : etape === 2 ? setEtape(1) : null}>
+          <Text style={styles.retour}>{etape < 3 ? '←' : ''}</Text>
         </TouchableOpacity>
         <Text style={styles.titrePage}>Creer un compte</Text>
         <Text style={styles.etapeIndicateur}>{etape}/3</Text>
@@ -100,7 +111,6 @@ export default function InscriptionScreen({ navigation }) {
             <Text style={styles.descriptionEtape}>
               Ces informations seront utilisees pour verifier votre identite
             </Text>
-
             <Text style={styles.label}>Prenom</Text>
             <TextInput
               style={styles.input}
@@ -110,7 +120,6 @@ export default function InscriptionScreen({ navigation }) {
               onChangeText={setPrenom}
               autoCapitalize="words"
             />
-
             <Text style={styles.label}>Nom</Text>
             <TextInput
               style={styles.input}
@@ -120,7 +129,6 @@ export default function InscriptionScreen({ navigation }) {
               onChangeText={setNom}
               autoCapitalize="words"
             />
-
             <Text style={styles.label}>Numero de telephone</Text>
             <View style={styles.inputAvecPrefixe}>
               <Text style={styles.prefixe}>+223</Text>
@@ -134,7 +142,6 @@ export default function InscriptionScreen({ navigation }) {
                 maxLength={8}
               />
             </View>
-
             <Text style={styles.label}>Date de naissance (optionnel)</Text>
             <TextInput
               style={styles.input}
@@ -152,7 +159,6 @@ export default function InscriptionScreen({ navigation }) {
             <Text style={styles.descriptionEtape}>
               Votre PIN a 4 chiffres securise votre compte. Ne le partagez jamais.
             </Text>
-
             <Text style={styles.label}>PIN (4 chiffres)</Text>
             <TextInput
               style={styles.input}
@@ -164,7 +170,6 @@ export default function InscriptionScreen({ navigation }) {
               maxLength={4}
               secureTextEntry
             />
-
             <Text style={styles.label}>Confirmer le PIN</Text>
             <TextInput
               style={styles.input}
@@ -176,7 +181,6 @@ export default function InscriptionScreen({ navigation }) {
               maxLength={4}
               secureTextEntry
             />
-
             <View style={styles.avertissement}>
               <Text style={styles.avertissementTexte}>
                 En creant votre compte, vous acceptez nos conditions d'utilisation et notre politique de confidentialite.
@@ -186,36 +190,33 @@ export default function InscriptionScreen({ navigation }) {
         )}
 
         {etape === 3 && (
-          <>
-            <View style={styles.kycContainer}>
-              <Text style={styles.kycEmoji}>🪪</Text>
-              <Text style={styles.kycTitre}>Verifiez votre identite</Text>
-              <Text style={styles.kycDescription}>
-                Pour securiser votre compte et respecter la reglementation, nous avons besoin de verifier votre identite avec votre CNI.
-              </Text>
-
-              <View style={styles.kycEtapes}>
-                <View style={styles.kycEtape}>
-                  <View style={styles.kycNumero}>
-                    <Text style={styles.kycNumeroTexte}>1</Text>
-                  </View>
-                  <Text style={styles.kycEtapeTexte}>Prenez en photo votre CNI recto verso</Text>
+          <View style={styles.kycContainer}>
+            <Text style={styles.kycEmoji}>🪪</Text>
+            <Text style={styles.kycTitre}>Verifiez votre identite</Text>
+            <Text style={styles.kycDescription}>
+              Pour securiser votre compte et respecter la reglementation, nous avons besoin de verifier votre identite avec votre CNI.
+            </Text>
+            <View style={styles.kycEtapes}>
+              <View style={styles.kycEtape}>
+                <View style={styles.kycNumero}>
+                  <Text style={styles.kycNumeroTexte}>1</Text>
                 </View>
-                <View style={styles.kycEtape}>
-                  <View style={styles.kycNumero}>
-                    <Text style={styles.kycNumeroTexte}>2</Text>
-                  </View>
-                  <Text style={styles.kycEtapeTexte}>Prenez un selfie pour confirmer votre identite</Text>
+                <Text style={styles.kycEtapeTexte}>Prenez en photo votre CNI recto verso</Text>
+              </View>
+              <View style={styles.kycEtape}>
+                <View style={styles.kycNumero}>
+                  <Text style={styles.kycNumeroTexte}>2</Text>
                 </View>
-                <View style={styles.kycEtape}>
-                  <View style={styles.kycNumero}>
-                    <Text style={styles.kycNumeroTexte}>3</Text>
-                  </View>
-                  <Text style={styles.kycEtapeTexte}>Votre compte est active automatiquement</Text>
+                <Text style={styles.kycEtapeTexte}>Prenez un selfie pour confirmer votre identite</Text>
+              </View>
+              <View style={styles.kycEtape}>
+                <View style={styles.kycNumero}>
+                  <Text style={styles.kycNumeroTexte}>3</Text>
                 </View>
+                <Text style={styles.kycEtapeTexte}>Votre compte est active automatiquement</Text>
               </View>
             </View>
-          </>
+          </View>
         )}
       </ScrollView>
 
@@ -245,9 +246,19 @@ export default function InscriptionScreen({ navigation }) {
             <TouchableOpacity style={styles.bouton} onPress={ouvrirKYC}>
               <Text style={styles.texteBouton}>Verifier mon identite</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.boutonSecondaire} onPress={passerKYC}>
-              <Text style={styles.texteBoutonSecondaire}>Le faire plus tard</Text>
-            </TouchableOpacity>
+            {kycLance && (
+              <TouchableOpacity
+                style={[styles.boutonSecondaire, chargement && styles.boutonDesactive]}
+                onPress={verifierEtActiver}
+                disabled={chargement}
+              >
+                {chargement ? (
+                  <ActivityIndicator color="#F0A500" />
+                ) : (
+                  <Text style={styles.texteBoutonSecondaire}>J'ai termine ma verification</Text>
+                )}
+              </TouchableOpacity>
+            )}
           </>
         )}
       </View>
@@ -265,7 +276,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 16
   },
-  retour: { fontSize: 24, color: '#FFFFFF' },
+  retour: { fontSize: 24, color: '#FFFFFF', width: 30 },
   titrePage: { fontSize: 18, fontWeight: '600', color: '#FFFFFF' },
   etapeIndicateur: { fontSize: 14, color: '#8E8E93' },
   progressContainer: {
@@ -275,11 +286,7 @@ const styles = StyleSheet.create({
     borderRadius: 2,
     marginBottom: 24
   },
-  progressBarre: {
-    height: 3,
-    backgroundColor: '#F0A500',
-    borderRadius: 2
-  },
+  progressBarre: { height: 3, backgroundColor: '#F0A500', borderRadius: 2 },
   contenu: { flex: 1, paddingHorizontal: 16 },
   titreEtape: { fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 },
   descriptionEtape: { fontSize: 15, color: '#8E8E93', lineHeight: 22, marginBottom: 32 },
@@ -334,9 +341,11 @@ const styles = StyleSheet.create({
   boutonSecondaire: {
     borderRadius: 16,
     paddingVertical: 16,
-    alignItems: 'center'
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#F0A500'
   },
   boutonDesactive: { opacity: 0.6 },
   texteBouton: { fontSize: 18, fontWeight: 'bold', color: '#FFFFFF' },
-  texteBoutonSecondaire: { fontSize: 16, color: '#8E8E93' }
+  texteBoutonSecondaire: { fontSize: 16, color: '#F0A500', fontWeight: '600' }
 })

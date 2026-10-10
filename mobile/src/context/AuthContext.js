@@ -17,7 +17,10 @@ export const AuthProvider = ({ children }) => {
       const token = await AsyncStorage.getItem('accessToken')
       const userData = await AsyncStorage.getItem('utilisateur')
       if (token && userData) {
-        setUtilisateur(JSON.parse(userData))
+        const user = JSON.parse(userData)
+        if (user.kyc_verifie) {
+          setUtilisateur(user)
+        }
       }
     } catch (error) {
       console.log('Erreur session:', error)
@@ -32,7 +35,9 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.setItem('accessToken', accessToken)
     await AsyncStorage.setItem('refreshToken', refreshToken)
     await AsyncStorage.setItem('utilisateur', JSON.stringify(user))
-    setUtilisateur(user)
+    if (user.kyc_verifie) {
+      setUtilisateur(user)
+    }
     return response.data
   }
 
@@ -42,8 +47,17 @@ export const AuthProvider = ({ children }) => {
     await AsyncStorage.setItem('accessToken', accessToken)
     await AsyncStorage.setItem('refreshToken', refreshToken)
     await AsyncStorage.setItem('utilisateur', JSON.stringify(user))
-    setUtilisateur(user)
     return response.data
+  }
+
+  const activerCompte = async () => {
+    const userData = await AsyncStorage.getItem('utilisateur')
+    if (userData) {
+      const user = JSON.parse(userData)
+      user.kyc_verifie = true
+      await AsyncStorage.setItem('utilisateur', JSON.stringify(user))
+      setUtilisateur(user)
+    }
   }
 
   const deconnexion = async () => {
@@ -55,7 +69,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ utilisateur, chargement, connexion, inscription, deconnexion }}>
+    <AuthContext.Provider value={{ utilisateur, chargement, connexion, inscription, deconnexion, activerCompte }}>
       {children}
     </AuthContext.Provider>
   )
