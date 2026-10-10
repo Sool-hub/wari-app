@@ -157,7 +157,11 @@ export default function DashboardScreen({ navigation }) {
             </View>
           ) : (
             transactions.map(tx => (
-              <TouchableOpacity key={tx.id} style={styles.transaction}>
+              <TouchableOpacity
+                key={tx.id}
+                style={styles.transaction}
+                onPress={() => navigation.navigate('TransactionDetail', { transaction: tx })}
+              >
                 <View style={styles.txIconeContainer}>
                   <Text style={styles.txIcone}>{getIconeTransaction(tx.type)}</Text>
                 </View>
